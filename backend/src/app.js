@@ -3,8 +3,11 @@ const morgan = require("morgan");
 const logger = require("./config/logger");
 const errorHandler = require("./middlewares/errorHandler");
 const ApiError = require("./utils/ApiError");
+const authRoutes = require("./routes/auth.routes");
 
 const app = express();
+app.use(express.json());
+app.use("/api/auth",authRoutes);
 
 //morgan
 app.use(
