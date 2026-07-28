@@ -1,39 +1,62 @@
 const express = require("express");
+const cors = require("cors");
 const morgan = require("morgan");
+
+const connectDB = require("./config/db");
 const logger = require("./config/logger");
-const errorHandler = require("./middlewares/errorHandler");
-const ApiError = require("./utils/ApiError");
+
 const authRoutes = require("./routes/auth.routes");
 
-const app = express();
-app.use(express.json());
-app.use("/api/auth",authRoutes);
+const errorHandler = require("./middlewares/errorHandler");
 
-//morgan
+require("dotenv").config();
+
+// Connect Database
+connectDB();
+
+const app = express();
+
+// Middlewares
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Morgan Logger
 app.use(
     morgan("combined", {
         stream: {
-            write: (message) => logger.info(message.trim()),
-        },
+            write: (message) => logger.info(message.trim())
+        }
     })
 );
-//body parser
-app.use(express.json());
 
-//routes
+// Routes
+app.use("/api/v1/auth", authRoutes);
+
+// Health Check Route
 app.get("/", (req, res) => {
-    res.send("Backend is working!");
-});
-app.get("/error", (req, res, next) => {
-    next(new ApiError(404 , "User not found"));
-});
-
-// 404 Middleware
-app.use((req, res, next) => {
-    next(new ApiError(404, `Route ${req.originalUrl} not found`));
+    res.json({
+        success: true,
+        message: "Project Management Platform API is running"
+    });
 });
 
-//global error handler
+// 404 Handler
+app.use((req, res) => {
+    return res.status(404).json({
+        success: false,
+        message: "Route not found"
+    });
+});
+
+// Global Error Handler
 app.use(errorHandler);
+
+/*const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    logger.info(`Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
+});*/
 
 module.exports = app;
