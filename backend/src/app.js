@@ -5,7 +5,9 @@ const morgan = require("morgan");
 const connectDB = require("./config/db");
 const logger = require("./config/logger");
 
+//import routes 
 const authRoutes = require("./routes/auth.routes");
+const workspaceRoutes = require("./routes/workspace.routes");
 
 const errorHandler = require("./middlewares/errorHandler");
 
@@ -30,8 +32,9 @@ app.use(
     })
 );
 
-// Routes
+// register Routes
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/workspaces", workspaceRoutes);
 
 // Health Check Route
 app.get("/", (req, res) => {
