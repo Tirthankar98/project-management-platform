@@ -8,6 +8,7 @@ const logger = require("./config/logger");
 //import routes 
 const authRoutes = require("./routes/auth.routes");
 const workspaceRoutes = require("./routes/workspace.routes");
+const projectRoutes = require("./routes/project.routes");
 
 const errorHandler = require("./middlewares/errorHandler");
 
@@ -35,6 +36,7 @@ app.use(
 // register Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/workspaces", workspaceRoutes);
+app.use("/api/v1/projects", projectRoutes);
 
 // Health Check Route
 app.get("/", (req, res) => {
