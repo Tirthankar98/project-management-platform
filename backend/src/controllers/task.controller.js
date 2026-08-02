@@ -14,6 +14,37 @@ const createTask = async (req, res) => {
       project,
     } = req.body;
 
+    // Title validation
+    if (!title) {
+      return res.status(400).json({
+        success: false,
+        message: "Title is required",
+      });
+    }
+
+    // Status validation
+    if (
+      status &&
+      !["Todo", "In Progress", "Done"].includes(status)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status",
+      });
+    }
+
+    // Priority validation
+    if (
+      priority &&
+      !["Low", "Medium", "High"].includes(priority)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid priority",
+      });
+    }
+    
+    //chceking if the project exists
     const projectExists = await Project.findById(project);
 
     if (!projectExists) {
@@ -22,7 +53,8 @@ const createTask = async (req, res) => {
         message: "Project not found",
       });
     }
-
+    
+    //checking assigned user 
     if (assignedTo) {
       const userExists = await User.findById(assignedTo);
 
@@ -50,6 +82,7 @@ const createTask = async (req, res) => {
       task,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -68,6 +101,7 @@ const getTasks = async (req, res) => {
       tasks,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -93,6 +127,7 @@ const getTask = async (req, res) => {
       task,
     });
   } catch (error) {
+     console.error(error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -102,17 +137,42 @@ const getTask = async (req, res) => {
 
 const updateTask = async (req, res) => {
   try {
-    const {
-      title,
-      description,
-      status,
-      priority,
-      dueDate,
-      assignedTo,
-    } = req.body;
 
-    if (assignedTo) {
-      const userExists = await User.findById(assignedTo);
+    const { title, status, priority } = req.body;
+
+    // Title validation
+    if (title !== undefined && title.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Title cannot be empty",
+      });
+    }
+
+    // Status validation
+    if (
+      status &&
+      !["Todo", "In Progress", "Completed"].includes(status)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status",
+      });
+    }
+
+    // Priority validation
+    if (
+      priority &&
+      !["Low", "Medium", "High"].includes(priority)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid priority",
+      });
+    }
+
+    // Check assigned user
+    if (req.body.assignedTo) {
+      const userExists = await User.findById(req.body.assignedTo);
 
       if (!userExists) {
         return res.status(404).json({
@@ -122,16 +182,21 @@ const updateTask = async (req, res) => {
       }
     }
 
+    // Check project
+    if (req.body.project) {
+      const projectExists = await Project.findById(req.body.project);
+
+      if (!projectExists) {
+        return res.status(404).json({
+          success: false,
+          message: "Project not found",
+        });
+      }
+    }
+
     const task = await Task.findByIdAndUpdate(
       req.params.id,
-      {
-        title,
-        description,
-        status,
-        priority,
-        dueDate,
-        assignedTo,
-      },
+      req.body,
       {
         new: true,
         runValidators: true,
@@ -152,7 +217,9 @@ const updateTask = async (req, res) => {
       message: "Task updated successfully",
       task,
     });
+
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -162,7 +229,7 @@ const updateTask = async (req, res) => {
 
 const deleteTask = async (req, res) => {
   try {
-    const task = await Task.findByIdAndDelete(req.params.id);
+    const task = await Task.findById(req.params.id);
 
     if (!task) {
       return res.status(404).json({
@@ -170,12 +237,15 @@ const deleteTask = async (req, res) => {
         message: "Task not found",
       });
     }
+    
+    await task.deleteOne(); //delete the task
 
     res.status(200).json({
       success: true,
       message: "Task deleted successfully",
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
       message: error.message,
