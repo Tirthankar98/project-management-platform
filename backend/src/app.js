@@ -10,6 +10,7 @@ const authRoutes = require("./routes/auth.routes");
 const workspaceRoutes = require("./routes/workspace.routes");
 const projectRoutes = require("./routes/project.routes");
 const taskRoutes = require("./routes/task.routes");
+const dashboardRoutes = require("./routes/dashboard.routes");
 
 const errorHandler = require("./middlewares/errorHandler");
 
@@ -39,6 +40,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/workspaces", workspaceRoutes);
 app.use("/api/v1/projects", projectRoutes);
 app.use("/api/v1/tasks", taskRoutes);
+app.use("/api/v1/dashboard", dashboardRoutes);
 
 // Health Check Route
 app.get("/", (req, res) => {

@@ -25,7 +25,7 @@ const createTask = async (req, res) => {
     // Status validation
     if (
       status &&
-      !["Todo", "In Progress", "Done"].includes(status)
+      !["Pending", "In Progress", "Completed"].includes(status)
     ) {
       return res.status(400).json({
         success: false,
@@ -151,7 +151,7 @@ const updateTask = async (req, res) => {
     // Status validation
     if (
       status &&
-      !["Todo", "In Progress", "Completed"].includes(status)
+      !["pending", "In Progress", "Completed"].includes(status)
     ) {
       return res.status(400).json({
         success: false,
