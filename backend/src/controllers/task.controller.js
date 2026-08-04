@@ -92,12 +92,71 @@ const createTask = async (req, res) => {
 
 const getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find()
-      .populate("project")
-      .populate("assignedTo");
+    const {
+      search,
+      status,
+      priority,
+      assignedTo,
+      project,
+      page = 1,
+      limit = 10,
+    } = req.query;
+
+    const query = {};
+
+
+    // Search
+    
+    if (search) {
+      query.$or = [
+        {
+          title: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          description: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+      ];
+    }
+
+    // Filtering
+
+    if (status) {
+      query.status = status;
+    }
+
+    if (priority) {
+      query.priority = priority;
+    }
+
+    if (assignedTo) {
+      query.assignedTo = assignedTo;
+    }
+
+    if (project) {
+      query.project = project;
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const totalTasks = await Task.countDocuments(query);
+
+    const tasks = await Task.find(query)
+      .populate("project", "name")
+      .populate("assignedTo", "name email")
+      .skip(skip)
+      .limit(Number(limit));
 
     res.status(200).json({
       success: true,
+      totalTasks,
+      currentPage: Number(page),
+      totalPages: Math.ceil(totalTasks / Number(limit)),
       tasks,
     });
   } catch (error) {
@@ -151,7 +210,7 @@ const updateTask = async (req, res) => {
     // Status validation
     if (
       status &&
-      !["pending", "In Progress", "Completed"].includes(status)
+      !["Pending", "In Progress", "Completed"].includes(status)
     ) {
       return res.status(400).json({
         success: false,
