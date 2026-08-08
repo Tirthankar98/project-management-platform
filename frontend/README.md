@@ -1,16 +1,20 @@
-# React + Vite
+# Flow — Project Management Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A production-ready React 19 + Vite frontend built exactly against the attached Express/MongoDB backend (`auth`, `workspaces`, `projects`, `tasks`, `dashboard`).
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+cp .env.example .env   # set VITE_API_BASE_URL to your backend
+npm run dev
+```
 
-## React Compiler
+The backend must be running (default `http://localhost:5000`) with `PORT`, `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN` configured, since `src/server.js` reads `process.env.PORT` and defaults to 5000.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Notes on backend contract
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Auth**: `POST /auth/register` (no auto-login — returns user only), `POST /auth/login` (returns `token` + `user`), `GET /auth/profile` (Bearer token). The app stores the JWT and attaches it via an Axios interceptor as `Authorization: Bearer <token>`.
+- **Tasks**: `GET /tasks` supports `search`, `status`, `priority`, `assignedTo`, `project`, `page`, `limit` — all wired into the Tasks page's search/filter/pagination.
+- **Assigned To**: the backend has no "list users" endpoint, so assigning a task takes a raw user ID (validated by the backend's `User.findById`) rather than a fabricated dropdown.
+- **Roles**: the `User` model has a `role` field (`admin`/`member`) but no route enforces it, so the UI displays it on the Profile page without gating any actions.
